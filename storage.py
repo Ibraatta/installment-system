@@ -103,13 +103,21 @@ class OneDriveStore:
         return new,result['eTag']
     def commit(self,expected,action,data,request_id):
         old,tag=self.read()
-        if tag!=expected: raise core.ConflictError('تغيرت نسخة OneDrive. حدّث وأعد العملية.')
-        wb=core.load(old);result=core.perform(wb,action,data,request_id);new=core.dump(wb)
+        # A form may stay open while OneDrive/Excel advances the workbook eTag.
+        # Rebase ordinary actions on the latest validated workbook instead of
+        # rejecting them solely because the screen's cached eTag is stale.
+        # core.perform revalidates the action against that latest state and its
+        # request id makes financial submissions idempotent.  _publish still
+        # performs a conditional write using the freshly-read eTag, so a real
+        # concurrent edit during this commit remains protected.
+        wb=core.load(old);result=core.perform(wb,action,data,request_id)
+        if result=='سبق تنفيذ الطلب': return result,old,tag
+        new=core.dump(wb)
         # Per-session recovery backup; OneDrive additionally keeps its own version history.
         root=Path(tempfile.gettempdir())/'installment_recovery'/hashlib.sha256(self.item_id.encode()).hexdigest()
         root.mkdir(parents=True,exist_ok=True);temp=root/self.name
         with FileLock(str(temp)+'.lock',timeout=20): atomic_write(temp,old);backup(temp)
-        raw,newtag=self._publish(expected,new)
+        raw,newtag=self._publish(tag,new)
         return result,raw,newtag
     def replace(self,expected,data):
         core.load(data)
