@@ -79,8 +79,13 @@ class OneDriveStore:
         # Use a documented conditional upload session to protect the write.
         meta=self.metadata()
         if not expected or meta.get('eTag')!=expected: raise core.ConflictError('تغير ملف OneDrive. حدّث الشاشة قبل الحفظ.')
+        # This endpoint targets an existing item.  Asking Graph to use
+        # conflictBehavior="fail" while also repeating the existing filename
+        # makes OneDrive Personal reject the upload with nameAlreadyExists.
+        # "replace" is the intended operation here; If-Match still prevents a
+        # stale writer from replacing a newer workbook revision.
         r=self.session.post(f'{GRAPH}/me/drive/items/{quote(self.item_id,safe="")}/createUploadSession',
-            headers={'If-Match':expected},json={'item':{'@microsoft.graph.conflictBehavior':'fail','name':self.name}},timeout=45)
+            headers={'If-Match':expected},json={'item':{'@microsoft.graph.conflictBehavior':'replace'}},timeout=45)
         self._error(r);upload_url=r.json()['uploadUrl']
         # Upload URLs already contain scoped authorization. Never forward the Graph bearer.
         chunk=320*1024*10;total=len(new);result={}
