@@ -15,23 +15,34 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.workbook.properties import CalcProperties
 from openpyxl.utils import get_column_letter
 
-VERSION = '1.0.0'
+VERSION = '1.1.0'
+SCHEMA_VERSION = 2
 TZ = ZoneInfo('Asia/Riyadh')
 SOURCE = 'https://fabulous-lipstick-e9d.notion.site/39d57dc9757a8008a982c7af38a4c0de'
 SCHEMA = {
  'العملاء': ['رقم العميل','اسم العميل','رقم الهوية','رقم الجوال','تاريخ إضافة العميل','حالة العميل','التصنيف الائتماني','الحد الائتماني','العنوان','جهة العمل','الدخل الشهري','اسم الكفيل','جوال الكفيل','ملاحظات','إجمالي التمويل','إجمالي المتبقي','المتبقي من التمويل','عدد مرات التأخير','إجمالي العقود','آخر تعديل'],
- 'العقود': ['رقم العقد','رقم العميل','تاريخ العقد','مبلغ التمويل','إجمالي السداد','مدة العقد','أول قسط','رسوم العقد','ملاحظات','حالة الصرف','مبلغ القسط','إجمالي المحصل','المبلغ المتبقي','الربح المتوقع','عدد الأقساط المسددة','عدد الأقساط المتبقية','المتبقي من التمويل','الاستحقاق القادم','تاريخ انتهاء العقد','حالة العقد','خصم السداد المبكر','آخر تعديل'],
+ 'المستثمرون': ['رقم المستثمر','اسم المستثمر','رقم الجوال','رقم الهوية','الحالة','ملاحظات','إجمالي التمويل','متبقي العقود','تحصيلات محتجزة','رسوم المكتب','آخر تعديل'],
+ 'العقود': ['رقم العقد','رقم العميل','تاريخ العقد','مبلغ التمويل','إجمالي السداد','مدة العقد','أول قسط','رسوم العقد','ملاحظات','حالة الصرف','مبلغ القسط','إجمالي المحصل','المبلغ المتبقي','الربح المتوقع','عدد الأقساط المسددة','عدد الأقساط المتبقية','المتبقي من التمويل','الاستحقاق القادم','تاريخ انتهاء العقد','حالة العقد','خصم السداد المبكر','آخر تعديل',
+   'نوع الصفقة','رقم المستثمر','المكتب المنفذ','تكلفة الشراء الفعلية','سعر الكاش','مبلغ التمويل المحول','رسوم مكتب مدفوعة','رسوم مكتب ثابتة','مصاريف أخرى','فرق الشراء','التكلفة الاستثمارية','صافي الربح المتوقع','عائد الاستثمار','ربح المكتب المتوقع','ربح المستثمر المتوقع','فائض تمويل متوقع'],
  'الأقساط': ['رقم القسط','رقم العقد','تسلسل القسط','تاريخ الاستحقاق','مبلغ القسط','المحصل','المتبقي','حالة القسط','أيام التأخير','تاريخ اكتمال السداد','خصم التسوية'],
- 'الحركات المالية': ['رقم العملية','التاريخ','المبلغ','نوع العملية','رقم العقد','المحصل','المرجع','ملاحظات','أثر الحركة','خصم التسوية','حالة العملية','وقت التسجيل','رقم الطلب','إلغاء بواسطة'],
+ 'الحركات المالية': ['رقم العملية','التاريخ','المبلغ','نوع العملية','رقم العقد','المحصل','المرجع','ملاحظات','أثر الحركة','خصم التسوية','حالة العملية','وقت التسجيل','رقم الطلب','إلغاء بواسطة','رقم المستثمر','ملكية الحركة','أثر أموال المستثمر'],
  'توزيع التحصيل': ['رقم التوزيع','رقم العملية','رقم القسط','المبلغ','نوع التوزيع','تاريخ العملية'],
  'متابعة العملاء': ['رقم المتابعة','رقم العميل','رقم العقد','تاريخ التواصل','وسيلة التواصل','نتيجة التواصل','وعد السداد','المبلغ الموعود','المتابعة القادمة','الحالة','ملاحظات','آخر تعديل'],
  'الإعدادات': ['المفتاح','القيمة','الوصف'],
  'سجل التغييرات': ['رقم السجل','الوقت','نوع الإجراء','رقم السجل المتأثر','تفاصيل'],
 }
-CASH_TYPES = {'رأس مال':1,'إضافة رأس مال':1,'سحب رأس مال':-1,'صرف تمويل':-1,'سداد قسط':1,'سداد مبكر':1,'رسوم عقد':1,'مصروف':-1}
+CASH_TYPES = {'رأس مال':1,'إضافة رأس مال':1,'سحب رأس مال':-1,'صرف تمويل':-1,'سداد قسط':1,'سداد مبكر':1,'رسوم عقد':1,'مصروف':-1,
+ 'إيداع مستثمر':1,'شراء لمستثمر':-1,'تحويل للمستثمر':-1,'رسوم مكتب':1,'مصروف صفقة':-1,'استرداد فائض تمويل':1}
 RECEIPTS = {'سداد قسط','سداد مبكر'}
 CLIENT_STATES = ['نشط','موقوف','مؤرشف']
 GRADES = ['غير مصنف','A','B','C','D']
+INVESTOR_STATES = ['نشط','موقوف','مؤرشف']
+DEAL_SELF = 'تمويل ذاتي'
+DEAL_EXTERNAL = 'استثمار عبر مكتب'
+DEAL_MANAGED = 'إدارة تمويل مستثمر'
+DEAL_TYPES = [DEAL_SELF,DEAL_EXTERNAL,DEAL_MANAGED]
+INVESTOR_POSITIVE = {'إيداع مستثمر'}
+INVESTOR_NEGATIVE = {'شراء لمستثمر','تحويل للمستثمر'}
 class ValidationError(ValueError): pass
 class ConflictError(RuntimeError): pass
 
@@ -87,14 +98,108 @@ def add_month(anchor,n):
     y,m=divmod(anchor.year*12+anchor.month-1+n,12); m+=1
     return date(y,m,min(anchor.day,monthrange(y,m)[1]))
 def active_tx(wb): return [r for r in rows(wb,'الحركات المالية') if r['حالة العملية']=='نشطة']
-def cash(wb): return sum(money(r['المبلغ'])*CASH_TYPES[r['نوع العملية']] for r in active_tx(wb))
+
+def deal_type(contract):
+    value=text(contract.get('نوع الصفقة')) or DEAL_SELF
+    if value not in DEAL_TYPES: raise ValidationError('نوع الصفقة غير صالح.')
+    return value
+
+def contract_metrics(contract):
+    """Return pricing and ownership measures in halalas without trusting Excel formulas."""
+    mode=deal_type(contract)
+    cash_price=money(contract.get('سعر الكاش') if contract.get('سعر الكاش') is not None else contract.get('مبلغ التمويل'))
+    purchase=money(contract.get('تكلفة الشراء الفعلية') if contract.get('تكلفة الشراء الفعلية') is not None else cash_price)
+    funding=money(contract.get('مبلغ التمويل المحول') if contract.get('مبلغ التمويل المحول') is not None else purchase)
+    total=money(contract.get('إجمالي السداد'))
+    customer_fee=money(contract.get('رسوم العقد'))
+    paid_office_fee=money(contract.get('رسوم مكتب مدفوعة'))
+    fixed_office_fee=money(contract.get('رسوم مكتب ثابتة'))
+    other=money(contract.get('مصاريف أخرى'))
+    purchase_saving=cash_price-purchase
+    expected_surplus=max(0,funding-purchase) if mode in [DEAL_EXTERNAL,DEAL_MANAGED] else 0
+    if mode==DEAL_MANAGED:
+        investor_cost=purchase+fixed_office_fee
+        investor_profit=total-investor_cost
+        office_profit=fixed_office_fee+customer_fee-other
+        invested_cost=investor_cost
+        cash_outflow=0
+        user_profit=office_profit
+        roi=Decimal(investor_profit)/Decimal(investor_cost) if investor_cost else Decimal(0)
+    else:
+        invested_cost=purchase+paid_office_fee+other
+        cash_outflow=(funding if mode==DEAL_EXTERNAL else purchase)+paid_office_fee+other
+        user_profit=total+customer_fee-invested_cost
+        investor_profit=user_profit
+        office_profit=user_profit
+        roi=Decimal(user_profit)/Decimal(invested_cost) if invested_cost else Decimal(0)
+    return {'mode':mode,'cash_price_h':cash_price,'purchase_cost_h':purchase,'funding_h':funding,'total_h':total,
+      'customer_fee_h':customer_fee,'paid_office_fee_h':paid_office_fee,'fixed_office_fee_h':fixed_office_fee,
+      'other_cost_h':other,'purchase_saving_h':purchase_saving,'expected_surplus_h':expected_surplus,
+      'invested_cost_h':invested_cost,'cash_outflow_h':cash_outflow,'net_expected_profit_h':user_profit,
+      'office_expected_profit_h':office_profit,'investor_expected_profit_h':investor_profit,'roi':roi}
+
+def investor_effect(wb,transaction,contracts=None):
+    """Cash held for investors: positive means it is in the office bank account."""
+    amount=money(transaction['المبلغ']);kind=transaction['نوع العملية']
+    if kind in INVESTOR_POSITIVE:return amount
+    if kind in INVESTOR_NEGATIVE:return -amount
+    if kind in RECEIPTS:
+        contracts=contracts or {r['رقم العقد']:r for r in rows(wb,'العقود')}
+        contract=contracts.get(transaction['رقم العقد'])
+        if contract and deal_type(contract)==DEAL_MANAGED:return amount
+    return 0
+
+def ledger_balances(wb):
+    contracts={r['رقم العقد']:r for r in rows(wb,'العقود')}
+    bank=sum(money(r['المبلغ'])*CASH_TYPES[r['نوع العملية']] for r in active_tx(wb))
+    managed=sum(investor_effect(wb,r,contracts) for r in active_tx(wb))
+    return {'bank_h':bank,'managed_h':managed,'free_h':bank-managed}
+
+def cash(wb): return ledger_balances(wb)['free_h']
+
+def migrate(wb):
+    """Upgrade the original workbook in memory. Existing records are never discarded."""
+    if 'الإعدادات' not in wb.sheetnames: raise ValidationError('ورقة الإعدادات مفقودة.')
+    raw_version=None
+    for row in wb['الإعدادات'].iter_rows(min_row=2,values_only=True):
+        if row and row[0]=='schema_version':raw_version=row[1];break
+    if str(raw_version) not in ['1','2']: raise ValidationError('نسخة بنية الملف غير مدعومة.')
+    for name,expected in SCHEMA.items():
+        if name not in wb.sheetnames:
+            if name=='المستثمرون': wb.create_sheet(name).append(expected)
+            else: raise ValidationError(f'ورقة {name} مفقودة.')
+        ws=wb[name]
+        actual=[c.value for c in ws[1]][:ws.max_column]
+        if actual!=expected[:len(actual)] or len(actual)>len(expected):
+            raise ValidationError(f'بنية ورقة {name} غير مطابقة.')
+        for col in range(len(actual)+1,len(expected)+1):put(ws,1,col,expected[col-1])
+    # V1 used one amount as both cash cost and contractual cash price.
+    for row in range(2,wb['العقود'].max_row+1):
+        ws=wb['العقود'];principal=ws.cell(row,4).value
+        defaults={'نوع الصفقة':DEAL_SELF,'تكلفة الشراء الفعلية':principal,'سعر الكاش':principal,
+          'مبلغ التمويل المحول':principal,'رسوم مكتب مدفوعة':0,'رسوم مكتب ثابتة':0,'مصاريف أخرى':0}
+        for key,value in defaults.items():
+            col=SCHEMA['العقود'].index(key)+1
+            if ws.cell(row,col).value is None:put(ws,row,col,value)
+    for row in range(2,wb['الحركات المالية'].max_row+1):
+        ws=wb['الحركات المالية']
+        if ws.cell(row,SCHEMA['الحركات المالية'].index('ملكية الحركة')+1).value is None:
+            put(ws,row,SCHEMA['الحركات المالية'].index('ملكية الحركة')+1,'سيولة المكتب')
+    updated=False
+    for row in range(2,wb['الإعدادات'].max_row+1):
+        if wb['الإعدادات'].cell(row,1).value=='schema_version':
+            put(wb['الإعدادات'],row,2,SCHEMA_VERSION);updated=True;break
+    if not updated:append(wb,'الإعدادات',{'المفتاح':'schema_version','القيمة':SCHEMA_VERSION,'الوصف':'بنية الملف؛ لا تعدل هذا السطر'})
+    if not any(r['المفتاح']=='managed_contract_rule' for r in rows(wb,'الإعدادات')):
+        append(wb,'الإعدادات',{'المفتاح':'managed_contract_rule','القيمة':'investor_owns_all_collections','الوصف':'المستثمر يملك كامل أقساط العقد، والمكتب يملك الرسوم الثابتة فقط'})
+    return wb
 
 def initialize(capital=100000,capital_date=date(2026,7,1)):
     wb=Workbook(); wb.remove(wb.active)
     wb.create_sheet('ملخص المحفظة')
     for name,h in SCHEMA.items(): wb.create_sheet(name).append(h)
     for key,val,desc in [
-       ('schema_version',1,'بنية الملف؛ لا تعدل هذا السطر'),
+       ('schema_version',SCHEMA_VERSION,'بنية الملف؛ لا تعدل هذا السطر'),
        ('default_months',16,'مدة افتراضية قابلة للتعديل لكل عقد'),
        ('default_profit_rate',0.60,'نسبة ربح إجمالية افتراضية قابلة للتعديل؛ ليست نسبة شهرية'),
        ('currency','SAR','الريال السعودي'),
@@ -102,13 +207,14 @@ def initialize(capital=100000,capital_date=date(2026,7,1)):
        ('principal_method','proportional','المتبقي من التمويل تقدير نسبي وليس قاعدة تسوية مبكرة'),
        ('calculation_note','إجمالي السداد يحدده المستخدم. توزيع السداد للأقدم، وأي فرق هللات في القسط الأخير.','صيغ نوشن الداخلية غير متاحة من رابط العرض العام'),
        ('grading_note','تصنيف داخلي يدوي؛ لم ينقل التطبيق معادلة تصنيف غير ظاهرة من نوشن.','التأخر يظهر من سجلات الاستحقاق والسداد'),
+       ('managed_contract_rule','investor_owns_all_collections','المستثمر يملك كامل أقساط العقد، والمكتب يملك الرسوم الثابتة فقط'),
     ]: append(wb,'الإعدادات',dict(zip(SCHEMA['الإعدادات'],[key,val,desc])))
     if money(capital):
         tx(wb,'رأس مال',capital,capital_date,notes='رصيد البداية الظاهر في صفحة نوشن المرجعية',request_id='NOTION-OPENING-20260701')
     rebuild(wb); format_book(wb)
     return wb
 
-def tx(wb,kind,amount,when,contract='',collector='',reference='',notes='',discount=0,request_id=None):
+def tx(wb,kind,amount,when,contract='',collector='',reference='',notes='',discount=0,request_id=None,investor='',ownership=''):
     if kind not in CASH_TYPES: raise ValidationError('نوع الحركة غير صالح.')
     amount_h=money(amount)
     if amount_h<=0: raise ValidationError('المبلغ يجب أن يكون أكبر من صفر.')
@@ -121,28 +227,64 @@ def tx(wb,kind,amount,when,contract='',collector='',reference='',notes='',discou
     reference=text(reference)
     if reference and any(r['المرجع']==reference and r['حالة العملية']=='نشطة' for r in rows(wb,'الحركات المالية')):
         raise ValidationError('المرجع مستخدم في حركة نشطة؛ راجع احتمال تكرار التسجيل.')
-    cid=text(contract)
-    c=None
-    if kind in RECEIPTS|{'صرف تمويل','رسوم عقد'}:
+    cid=text(contract);investor=text(investor);c=None
+    linked=RECEIPTS|{'صرف تمويل','رسوم عقد','إيداع مستثمر','شراء لمستثمر','رسوم مكتب','مصروف صفقة','استرداد فائض تمويل'}
+    if kind in linked:
         c=require(wb,'العقود','رقم العقد',cid)
         if when<day(c['تاريخ العقد']): raise ValidationError('الحركة لا يمكن أن تسبق تاريخ العقد.')
-    elif cid: raise ValidationError('هذا النوع من الحركة لا يرتبط بعقد.')
+        if deal_type(c)==DEAL_MANAGED:
+            investor=text(c.get('رقم المستثمر'))
+            require(wb,'المستثمرون','رقم المستثمر',investor)
+    elif kind=='تحويل للمستثمر':
+        require(wb,'المستثمرون','رقم المستثمر',investor)
+        if cid:
+            c=require(wb,'العقود','رقم العقد',cid)
+            if deal_type(c)!=DEAL_MANAGED or text(c.get('رقم المستثمر'))!=investor:
+                raise ValidationError('العقد لا يخص المستثمر المحدد.')
+    elif cid or investor: raise ValidationError('هذا النوع من الحركة لا يرتبط بعقد أو مستثمر.')
     if kind=='صرف تمويل':
+        if deal_type(c)==DEAL_MANAGED: raise ValidationError('عقد المستثمر يُفعّل من زر تنفيذ صفقة المستثمر.')
         client=require(wb,'العملاء','رقم العميل',c['رقم العميل'])
         if client['حالة العميل']!='نشط': raise ValidationError('العميل غير نشط.')
-        if any(r['رقم العقد']==cid and r['نوع العملية']=='صرف تمويل' for r in active_tx(wb)):
+        if any(r['رقم العقد']==cid and r['نوع العملية'] in ['صرف تمويل','شراء لمستثمر'] for r in active_tx(wb)):
             raise ValidationError('سبق صرف هذا العقد.')
-        if amount_h!=money(c['مبلغ التمويل']): raise ValidationError('مبلغ الصرف يجب أن يساوي مبلغ تمويل العقد.')
+        metrics=contract_metrics(c)
+        if amount_h!=metrics['cash_outflow_h']: raise ValidationError('مبلغ الصرف يجب أن يساوي التكلفة النقدية الكاملة للصفقة.')
         snap=snapshot(wb)
         outstanding=sum(x['principal_remaining_h'] for x in snap['contracts'] if x['client_id']==c['رقم العميل'] and x['disbursed'])
         limit=money(client['الحد الائتماني'])
-        if limit and outstanding+amount_h>limit: raise ValidationError('الصرف يتجاوز الحد الائتماني المحدد للعميل.')
+        if limit and outstanding+metrics['cash_price_h']>limit: raise ValidationError('الصرف يتجاوز الحد الائتماني المحدد للعميل.')
+    elif kind=='إيداع مستثمر':
+        if deal_type(c)!=DEAL_MANAGED or amount_h!=contract_metrics(c)['funding_h']: raise ValidationError('إيداع المستثمر لا يطابق مبلغ تمويل الصفقة.')
+        if any(r['رقم العقد']==cid and r['نوع العملية']=='إيداع مستثمر' for r in active_tx(wb)): raise ValidationError('سبق تسجيل إيداع المستثمر لهذا العقد.')
+    elif kind=='شراء لمستثمر':
+        if deal_type(c)!=DEAL_MANAGED or amount_h!=contract_metrics(c)['purchase_cost_h']: raise ValidationError('قيمة الشراء لا تطابق تكلفة السلعة الفعلية.')
+        if any(r['رقم العقد']==cid and r['نوع العملية'] in ['صرف تمويل','شراء لمستثمر'] for r in active_tx(wb)): raise ValidationError('سبق تنفيذ شراء هذا العقد.')
+    elif kind=='رسوم مكتب':
+        if deal_type(c)!=DEAL_MANAGED: raise ValidationError('رسوم المكتب الثابتة مخصصة لعقد مستثمر مُدار.')
+        already=sum(money(r['المبلغ']) for r in active_tx(wb) if r['رقم العقد']==cid and r['نوع العملية']=='رسوم مكتب')
+        if already+amount_h>contract_metrics(c)['fixed_office_fee_h']: raise ValidationError('رسوم المكتب تتجاوز الرسوم الثابتة المتفق عليها.')
+    elif kind=='مصروف صفقة':
+        if deal_type(c)!=DEAL_MANAGED: raise ValidationError('مصروف الصفقة المنفصل مخصص لعقد مستثمر مُدار.')
+        already=sum(money(r['المبلغ']) for r in active_tx(wb) if r['رقم العقد']==cid and r['نوع العملية']=='مصروف صفقة')
+        if already+amount_h>contract_metrics(c)['other_cost_h']: raise ValidationError('مصروف الصفقة يتجاوز المصاريف المتفق عليها.')
+    elif kind=='استرداد فائض تمويل':
+        if deal_type(c)!=DEAL_EXTERNAL: raise ValidationError('استرداد الفائض مخصص للاستثمار عبر مكتب آخر.')
+        already=sum(money(r['المبلغ']) for r in active_tx(wb) if r['رقم العقد']==cid and r['نوع العملية']=='استرداد فائض تمويل')
+        if already+amount_h>contract_metrics(c)['expected_surplus_h']: raise ValidationError('المبلغ المسترد يتجاوز فائض التمويل المتوقع.')
+    elif kind in RECEIPTS and deal_type(c)==DEAL_MANAGED:
+        investor=text(c.get('رقم المستثمر'))
+    if kind in INVESTOR_POSITIVE|INVESTOR_NEGATIVE or (kind in RECEIPTS and c and deal_type(c)==DEAL_MANAGED):
+        ownership='أموال مستثمر'
+    else:ownership='سيولة المكتب'
     ident=uid('TX')
-    append(wb,'الحركات المالية',{
+    record={
         'رقم العملية':ident,'التاريخ':when,'المبلغ':sar(amount_h),'نوع العملية':kind,'رقم العقد':cid,
         'المحصل':text(collector),'المرجع':reference,'ملاحظات':text(notes),'أثر الحركة':sar(amount_h*CASH_TYPES[kind]),
         'خصم التسوية':sar(money(discount)),'حالة العملية':'نشطة','وقت التسجيل':stamp(),'رقم الطلب':request_id,
-    })
+        'رقم المستثمر':investor,'ملكية الحركة':ownership,
+    }
+    append(wb,'الحركات المالية',record)
     return ident
 
 def add_client(wb,data):
@@ -175,20 +317,92 @@ def edit_client(wb,ident,data):
         changes[k]=sar(money(data.get(k)))
     changes['آخر تعديل']=stamp(); update(wb,'العملاء','رقم العميل',ident,changes)
 
+def add_investor(wb,data):
+    name=text(data.get('اسم المستثمر'));phone=text(data.get('رقم الجوال'));identity=text(data.get('رقم الهوية'))
+    if not name or not phone: raise ValidationError('اسم المستثمر ورقم الجوال مطلوبان.')
+    if identity and any(text(r['رقم الهوية'])==identity for r in rows(wb,'المستثمرون')): raise ValidationError('رقم هوية المستثمر مستخدم.')
+    state=data.get('الحالة','نشط')
+    if state not in INVESTOR_STATES: raise ValidationError('حالة المستثمر غير صالحة.')
+    ident=uid('INV')
+    append(wb,'المستثمرون',{'رقم المستثمر':ident,'اسم المستثمر':name,'رقم الجوال':phone,'رقم الهوية':identity,
+      'الحالة':state,'ملاحظات':text(data.get('ملاحظات')),'آخر تعديل':stamp()})
+    return ident
+
+def edit_investor(wb,ident,data):
+    old=require(wb,'المستثمرون','رقم المستثمر',ident);identity=text(data.get('رقم الهوية',old.get('رقم الهوية')))
+    if identity and any(r['رقم المستثمر']!=ident and text(r['رقم الهوية'])==identity for r in rows(wb,'المستثمرون')):
+        raise ValidationError('رقم هوية المستثمر مستخدم.')
+    name=text(data.get('اسم المستثمر',old.get('اسم المستثمر')));phone=text(data.get('رقم الجوال',old.get('رقم الجوال')))
+    state=data.get('الحالة',old.get('الحالة'))
+    if not name or not phone or state not in INVESTOR_STATES: raise ValidationError('بيانات المستثمر غير مكتملة.')
+    if state=='مؤرشف':
+        open_ids={x['رقم العقد'] for x in snapshot(wb)['contracts'] if x['disbursed'] and x['remaining_h']>0}
+        if any(deal_type(c)==DEAL_MANAGED and c.get('رقم المستثمر')==ident and c['رقم العقد'] in open_ids for c in rows(wb,'العقود')):
+            raise ValidationError('لا يمكن أرشفة مستثمر لديه عقد قائم.')
+    update(wb,'المستثمرون','رقم المستثمر',ident,{'اسم المستثمر':name,'رقم الجوال':phone,'رقم الهوية':identity,
+      'الحالة':state,'ملاحظات':text(data.get('ملاحظات',old.get('ملاحظات'))),'آخر تعديل':stamp()})
+
+def activate_contract(wb,ident,when,collector='',reference='',notes='',request_id=None):
+    contract=require(wb,'العقود','رقم العقد',ident);client=require(wb,'العملاء','رقم العميل',contract['رقم العميل'])
+    if client['حالة العميل']!='نشط': raise ValidationError('العميل غير نشط.')
+    if any(r['رقم العقد']==ident and r['نوع العملية'] in ['صرف تمويل','شراء لمستثمر'] for r in active_tx(wb)):
+        raise ValidationError('سبق تنفيذ هذه الصفقة.')
+    metrics=contract_metrics(contract);request_id=request_id or uid('REQ')
+    snap=snapshot(wb);outstanding=sum(x['principal_remaining_h'] for x in snap['contracts'] if x['client_id']==contract['رقم العميل'] and x['disbursed'])
+    limit=money(client['الحد الائتماني'])
+    if limit and outstanding+metrics['cash_price_h']>limit: raise ValidationError('الصرف يتجاوز الحد الائتماني المحدد للعميل.')
+    common={'when':when,'contract':ident,'collector':collector,'notes':notes}
+    if metrics['mode']==DEAL_MANAGED:
+        investor=text(contract.get('رقم المستثمر'));record=require(wb,'المستثمرون','رقم المستثمر',investor)
+        if record['الحالة']!='نشط': raise ValidationError('المستثمر غير نشط.')
+        tx(wb,'إيداع مستثمر',sar(metrics['funding_h']),reference=reference,investor=investor,request_id=request_id+':F',**common)
+        tx(wb,'شراء لمستثمر',sar(metrics['purchase_cost_h']),investor=investor,request_id=request_id+':P',**common)
+        if metrics['fixed_office_fee_h']:
+            tx(wb,'رسوم مكتب',sar(metrics['fixed_office_fee_h']),investor=investor,request_id=request_id+':C',**common)
+        if metrics['other_cost_h']:
+            tx(wb,'مصروف صفقة',sar(metrics['other_cost_h']),investor=investor,request_id=request_id+':E',**common)
+    else:
+        tx(wb,'صرف تمويل',sar(metrics['cash_outflow_h']),reference=reference,request_id=request_id+':D',**common)
+    return ident
+
 def add_contract(wb,data,ident=None):
     client=require(wb,'العملاء','رقم العميل',data['رقم العميل'])
     if client['حالة العميل']!='نشط': raise ValidationError('يجب أن يكون العميل نشطًا.')
-    p,t=money(data['مبلغ التمويل']),money(data['إجمالي السداد'])
+    mode=data.get('نوع الصفقة',DEAL_SELF)
+    if mode not in DEAL_TYPES: raise ValidationError('نوع الصفقة غير صالح.')
+    p=money(data.get('سعر الكاش',data.get('مبلغ التمويل')));t=money(data['إجمالي السداد'])
+    purchase=money(data.get('تكلفة الشراء الفعلية',sar(p)))
+    funding=money(data.get('مبلغ التمويل المحول',sar(purchase)))
+    if mode==DEAL_SELF:funding=purchase
     n=int(data['مدة العقد']); start=day(data['أول قسط']); signed=day(data['تاريخ العقد'])
     if p<=0 or t<p or n<1 or n>120 or t<n: raise ValidationError('تحقق من مبلغ التمويل وإجمالي السداد والمدة (1–120 شهرًا).')
+    if purchase<=0 or funding<=0: raise ValidationError('تكلفة الشراء ومبلغ التمويل يجب أن يكونا أكبر من صفر.')
+    if mode in [DEAL_EXTERNAL,DEAL_MANAGED] and funding<purchase: raise ValidationError('مبلغ التمويل المحول لا يمكن أن يقل عن تكلفة الشراء الفعلية.')
     if not start or not signed or start<signed: raise ValidationError('تاريخ أول قسط لا يمكن أن يسبق العقد.')
     if signed>today(): raise ValidationError('تاريخ العقد لا يمكن أن يتجاوز اليوم.')
     fees=money(data.get('رسوم العقد'))
-    if fees<0: raise ValidationError('رسوم العقد لا تقبل السالب.')
+    paid_fee=money(data.get('رسوم مكتب مدفوعة'));fixed_fee=money(data.get('رسوم مكتب ثابتة'));other=money(data.get('مصاريف أخرى'))
+    if min(fees,paid_fee,fixed_fee,other)<0: raise ValidationError('الرسوم والمصاريف لا تقبل السالب.')
+    investor=text(data.get('رقم المستثمر'));office=text(data.get('المكتب المنفذ'))
+    if mode==DEAL_MANAGED:
+        inv=require(wb,'المستثمرون','رقم المستثمر',investor)
+        if inv['الحالة']!='نشط': raise ValidationError('اختر مستثمرًا نشطًا.')
+        if paid_fee: raise ValidationError('عقد المستثمر يستخدم رسوم المكتب الثابتة، لا الرسوم المدفوعة لمكتب آخر.')
+    else:
+        investor='';fixed_fee=0
+    if mode!=DEAL_EXTERNAL:office=''
     ident=ident or text(data.get('رقم العقد')) or uid('CT')
     if find(wb,'العقود','رقم العقد',ident): raise ValidationError('رقم العقد مستخدم بالفعل.')
-    append(wb,'العقود',{'رقم العقد':ident,'رقم العميل':data['رقم العميل'],'تاريخ العقد':signed,'مبلغ التمويل':sar(p),
-       'إجمالي السداد':sar(t),'مدة العقد':n,'أول قسط':start,'رسوم العقد':sar(fees),'ملاحظات':text(data.get('ملاحظات')),'آخر تعديل':stamp()})
+    record={'رقم العقد':ident,'رقم العميل':data['رقم العميل'],'تاريخ العقد':signed,'مبلغ التمويل':sar(p),
+       'إجمالي السداد':sar(t),'مدة العقد':n,'أول قسط':start,'رسوم العقد':sar(fees),'ملاحظات':text(data.get('ملاحظات')),'آخر تعديل':stamp(),
+       'نوع الصفقة':mode,'رقم المستثمر':investor,'المكتب المنفذ':office,'تكلفة الشراء الفعلية':sar(purchase),'سعر الكاش':sar(p),
+       'مبلغ التمويل المحول':sar(funding),'رسوم مكتب مدفوعة':sar(paid_fee),'رسوم مكتب ثابتة':sar(fixed_fee),'مصاريف أخرى':sar(other)}
+    calculated=contract_metrics(record)
+    record.update({'فرق الشراء':sar(calculated['purchase_saving_h']),'التكلفة الاستثمارية':sar(calculated['invested_cost_h']),
+       'صافي الربح المتوقع':sar(calculated['net_expected_profit_h']),'عائد الاستثمار':float(calculated['roi']),
+       'ربح المكتب المتوقع':sar(calculated['office_expected_profit_h']),'ربح المستثمر المتوقع':sar(calculated['investor_expected_profit_h']),
+       'فائض تمويل متوقع':sar(calculated['expected_surplus_h'])})
+    append(wb,'العقود',record)
     base=t//n
     for i in range(n):
         append(wb,'الأقساط',{'رقم القسط':f'{ident}-{i+1:03}','رقم العقد':ident,'تسلسل القسط':i+1,
@@ -218,12 +432,14 @@ def add_followup(wb,data):
 def rebuild(wb):
     """Replay the active ledger and allocate receipts FIFO with exact cent rounding."""
     clients={r['رقم العميل']:r for r in rows(wb,'العملاء')}
+    investors={r['رقم المستثمر']:r for r in rows(wb,'المستثمرون')}
     contracts={r['رقم العقد']:r for r in rows(wb,'العقود')}
     schedule=rows(wb,'الأقساط')
     installments={r['رقم القسط']:{**r,'paid_h':0,'waived_h':0,'paid_date':None} for r in schedule}
     if len(installments)!=len(schedule): raise ValidationError('رقم قسط مكرر.')
     for cid,c in contracts.items():
         if c['رقم العميل'] not in clients: raise ValidationError('عقد مرتبط بعميل غير موجود.')
+        if deal_type(c)==DEAL_MANAGED and c.get('رقم المستثمر') not in investors: raise ValidationError('عقد مرتبط بمستثمر غير موجود.')
         parts=[r for r in schedule if r['رقم العقد']==cid]
         if len(parts)!=int(c['مدة العقد']) or sum(money(x['مبلغ القسط']) for x in parts)!=money(c['إجمالي السداد']):
             raise ValidationError('جدول الأقساط لا يطابق مدة العقد أو إجمالي السداد.')
@@ -232,17 +448,45 @@ def rebuild(wb):
         raise ValidationError('أرقام حركات مكررة.')
     refs=[r['المرجع'] for r in alltx if r['المرجع']]
     if len(refs)!=len(set(refs)): raise ValidationError('مراجع مالية مكررة.')
-    allocated=[]; running=0; disbursed={}; settled=set(); fee_paid={}
+    allocated=[];bank_running=0;managed_running=0;investor_running={};disbursed={};settled=set();fee_paid={};office_fee_paid={};deal_expense_paid={}
     for tr in sorted(alltx,key=lambda r:(day(r['التاريخ']),str(r['وقت التسجيل']),r['رقم العملية'])):
         typ=tr['نوع العملية']; amount=money(tr['المبلغ']); cid=tr['رقم العقد']; d=day(tr['التاريخ'])
         if typ not in CASH_TYPES or amount<=0 or d is None or d>today(): raise ValidationError('حركة مالية غير صالحة.')
-        if typ in RECEIPTS|{'صرف تمويل','رسوم عقد'}:
+        if typ in RECEIPTS|{'صرف تمويل','رسوم عقد','إيداع مستثمر','شراء لمستثمر','رسوم مكتب','مصروف صفقة','استرداد فائض تمويل'}:
             if cid not in contracts: raise ValidationError('حركة مرتبطة بعقد غير موجود.')
             if d<day(contracts[cid]['تاريخ العقد']): raise ValidationError('الحركة تسبق تاريخ العقد.')
         if typ=='صرف تمويل':
             if cid in disbursed: raise ValidationError('صرف مكرر لنفس العقد.')
-            if amount!=money(contracts[cid]['مبلغ التمويل']): raise ValidationError('مبلغ الصرف يخالف مبلغ العقد.')
+            metrics=contract_metrics(contracts[cid])
+            if metrics['mode']==DEAL_MANAGED or amount!=metrics['cash_outflow_h']: raise ValidationError('مبلغ الصرف يخالف تكلفة الصفقة.')
             disbursed[cid]=d
+        if typ=='إيداع مستثمر':
+            metrics=contract_metrics(contracts[cid]);inv=text(contracts[cid].get('رقم المستثمر'))
+            if metrics['mode']!=DEAL_MANAGED or amount!=metrics['funding_h'] or text(tr.get('رقم المستثمر'))!=inv:
+                raise ValidationError('إيداع مستثمر غير مطابق للعقد.')
+        if typ=='شراء لمستثمر':
+            metrics=contract_metrics(contracts[cid]);inv=text(contracts[cid].get('رقم المستثمر'))
+            if cid in disbursed or metrics['mode']!=DEAL_MANAGED or amount!=metrics['purchase_cost_h'] or text(tr.get('رقم المستثمر'))!=inv:
+                raise ValidationError('شراء المستثمر غير مطابق للعقد أو مكرر.')
+            disbursed[cid]=d
+        if typ=='رسوم مكتب':
+            metrics=contract_metrics(contracts[cid]);inv=text(contracts[cid].get('رقم المستثمر'))
+            if metrics['mode']!=DEAL_MANAGED or text(tr.get('رقم المستثمر'))!=inv: raise ValidationError('رسوم مكتب غير مرتبطة بمستثمر العقد.')
+            office_fee_paid[cid]=office_fee_paid.get(cid,0)+amount
+            if office_fee_paid[cid]>metrics['fixed_office_fee_h']: raise ValidationError('رسوم المكتب تتجاوز المتفق عليه.')
+        if typ=='مصروف صفقة':
+            metrics=contract_metrics(contracts[cid]);inv=text(contracts[cid].get('رقم المستثمر'))
+            if metrics['mode']!=DEAL_MANAGED or text(tr.get('رقم المستثمر'))!=inv: raise ValidationError('مصروف الصفقة غير مرتبط بمستثمر العقد.')
+            deal_expense_paid[cid]=deal_expense_paid.get(cid,0)+amount
+            if deal_expense_paid[cid]>metrics['other_cost_h']: raise ValidationError('مصروف الصفقة يتجاوز المتفق عليه.')
+        if typ=='استرداد فائض تمويل':
+            metrics=contract_metrics(contracts[cid])
+            if metrics['mode']!=DEAL_EXTERNAL: raise ValidationError('استرداد فائض مرتبط بنوع صفقة غير صالح.')
+            refunds=sum(money(x['المبلغ']) for x in alltx if x['رقم العقد']==cid and x['نوع العملية']=='استرداد فائض تمويل')
+            if refunds>metrics['expected_surplus_h']: raise ValidationError('استرداد فائض التمويل يتجاوز المستحق.')
+        if typ=='تحويل للمستثمر':
+            inv=text(tr.get('رقم المستثمر'))
+            if inv not in investors: raise ValidationError('تحويل مرتبط بمستثمر غير موجود.')
         if typ=='رسوم عقد':
             if cid not in disbursed: raise ValidationError('تحصيل الرسوم يتطلب صرف التمويل أولًا.')
             fee_paid[cid]=fee_paid.get(cid,0)+amount
@@ -270,8 +514,23 @@ def rebuild(wb):
                         allocated.append({'رقم التوزيع':f"{tr['رقم العملية']}:{p['رقم القسط']}:W",'رقم العملية':tr['رقم العملية'],'رقم القسط':p['رقم القسط'],'المبلغ':sar(gap),'نوع التوزيع':'خصم','تاريخ العملية':d})
                 settled.add(cid)
         elif money(tr['خصم التسوية']): raise ValidationError('الخصم مسموح في التسوية فقط.')
-        running+=amount*CASH_TYPES[typ]
-        if running<0: raise ValidationError('الحركة تجعل السيولة سالبة في تاريخها؛ راجع رأس المال وتاريخ الصرف.')
+        bank_running+=amount*CASH_TYPES[typ]
+        managed_delta=investor_effect(wb,tr,contracts);managed_running+=managed_delta
+        inv=text(tr.get('رقم المستثمر'))
+        if not inv and cid in contracts and deal_type(contracts[cid])==DEAL_MANAGED:inv=text(contracts[cid].get('رقم المستثمر'))
+        if managed_delta:
+            investor_running[inv]=investor_running.get(inv,0)+managed_delta
+            if investor_running[inv]<0: raise ValidationError('التحويل للمستثمر يتجاوز أمواله المحتجزة.')
+        if bank_running<0: raise ValidationError('الحركة تجعل رصيد الحساب البنكي سالبًا في تاريخها.')
+        if managed_running<0: raise ValidationError('حركات المستثمرين تجعل الأموال المحتجزة سالبة.')
+        if bank_running-managed_running<0: raise ValidationError('الحركة تستخدم أموال المستثمرين لتغطية مصروفات المكتب؛ العملية مرفوضة.')
+    for cid in disbursed:
+        metrics=contract_metrics(contracts[cid])
+        if metrics['mode']==DEAL_MANAGED:
+            if office_fee_paid.get(cid,0)!=metrics['fixed_office_fee_h']:
+                raise ValidationError('رسوم المكتب المسجلة لا تطابق العقد المُدار.')
+            if deal_expense_paid.get(cid,0)!=metrics['other_cost_h']:
+                raise ValidationError('مصاريف الصفقة المسجلة لا تطابق العقد المُدار.')
     ws=wb['توزيع التحصيل']; ws.delete_rows(2,ws.max_row)
     for r in allocated: append(wb,'توزيع التحصيل',r)
     # Formula cells are for Excel readers; the application calculates from raw records.
@@ -303,6 +562,14 @@ def rebuild(wb):
         }.items(): ws.cell(i,col,f)
         ws.cell(i,18).value=nextdue
         ws.cell(i,20,f'=IF(J{i}="لم يصرف","مسودة",IF(M{i}=0,IF(COUNTIFS(\'الحركات المالية\'!$E$2:$E${tn},A{i},\'الحركات المالية\'!$D$2:$D${tn},"سداد مبكر",\'الحركات المالية\'!$K$2:$K${tn},"نشطة")>0,"مسدد مبكرًا","مكتمل"),IF(COUNTIFS(\'الأقساط\'!$B$2:$B${sn},A{i},\'الأقساط\'!$G$2:$G${sn},">0",\'الأقساط\'!$D$2:$D${sn},"<"&TODAY())>0,"متأخر","منتظم")))')
+        metrics=contract_metrics(c)
+        calculated={'نوع الصفقة':metrics['mode'],'تكلفة الشراء الفعلية':sar(metrics['purchase_cost_h']),
+          'سعر الكاش':sar(metrics['cash_price_h']),'مبلغ التمويل المحول':sar(metrics['funding_h']),
+          'فرق الشراء':sar(metrics['purchase_saving_h']),'التكلفة الاستثمارية':sar(metrics['invested_cost_h']),
+          'صافي الربح المتوقع':sar(metrics['net_expected_profit_h']),'عائد الاستثمار':float(metrics['roi']),
+          'ربح المكتب المتوقع':sar(metrics['office_expected_profit_h']),'ربح المستثمر المتوقع':sar(metrics['investor_expected_profit_h']),
+          'فائض تمويل متوقع':sar(metrics['expected_surplus_h'])}
+        for key,value in calculated.items():put(ws,i,SCHEMA['العقود'].index(key)+1,value)
     # Use a computed snapshot for current internal delay counts and cash views.
     snap=_snapshot_data(wb,installments,disbursed,settled)
     for i,cl in enumerate(rows(wb,'العملاء'),2):
@@ -311,20 +578,37 @@ def rebuild(wb):
             ws.cell(i,col,f'=SUMIFS(\'العقود\'!${source}$2:${source}${cn},\'العقود\'!$B$2:$B${cn},A{i},\'العقود\'!$J$2:$J${cn},"مصروف")')
         ws.cell(i,18,sum(1 for x in snap['installments'] if x['client_id']==cid and x['disbursed'] and x['late_days']>0))
         ws.cell(i,19,f'=COUNTIFS(\'العقود\'!$B$2:$B${cn},A{i})')
+    contracts={r['رقم العقد']:r for r in rows(wb,'العقود')}
     for i,tr in enumerate(rows(wb,'الحركات المالية'),2):
-        wb['الحركات المالية'].cell(i,9,f'=IF(K{i}="نشطة",C{i}*{CASH_TYPES.get(tr["نوع العملية"],0)},0)')
+        ws=wb['الحركات المالية'];active=tr['حالة العملية']=='نشطة'
+        ws.cell(i,9,f'=IF(K{i}="نشطة",C{i}*{CASH_TYPES.get(tr["نوع العملية"],0)},0)')
+        effect=investor_effect(wb,tr,contracts) if active else 0
+        put(ws,i,17,sar(effect))
+        if not tr.get('ملكية الحركة'):
+            put(ws,i,16,'أموال مستثمر' if effect else 'سيولة المكتب')
+    # Investor totals are derived from contracts and the guarded ledger.
+    for i,inv in enumerate(rows(wb,'المستثمرون'),2):
+        iid=inv['رقم المستثمر'];managed=[c for c in snap['contracts'] if c['deal_type']==DEAL_MANAGED and c['investor_id']==iid and c['disbursed']]
+        put(wb['المستثمرون'],i,7,sar(sum(c['funding_h'] for c in managed)))
+        put(wb['المستثمرون'],i,8,sar(sum(c['remaining_h'] for c in managed)))
+        put(wb['المستثمرون'],i,9,sar(investor_running.get(iid,0)))
+        fees=sum(money(t['المبلغ']) for t in alltx if t.get('رقم المستثمر')==iid and t['نوع العملية']=='رسوم مكتب')
+        put(wb['المستثمرون'],i,10,sar(fees))
+    # Refresh rows changed after the computed snapshot was assembled so the UI
+    # receives the current totals in the same request.
+    snap['clients']=rows(wb,'العملاء')
+    snap['investors']=rows(wb,'المستثمرون')
+    snap['transactions']=rows(wb,'الحركات المالية')
     dash=wb['ملخص المحفظة']; dash.delete_rows(1,dash.max_row)
     dash.append(['إدارة التقسيط','']);dash.append(['المؤشر','القيمة بالريال / العدد'])
-    formulas=[('السيولة المتاحة',f'=SUM(\'الحركات المالية\'!I2:I{tn})'),
-      ('المتبقي للتحصيل',f'=SUMIFS(\'العقود\'!M2:M{cn},\'العقود\'!J2:J{cn},"مصروف")'),
-      ('المتبقي من التمويل (تقدير نسبي)',f'=SUMIFS(\'العقود\'!Q2:Q{cn},\'العقود\'!J2:J{cn},"مصروف")'),
-      ('إجمالي التمويل المصروف',f'=SUMIFS(\'الحركات المالية\'!C2:C{tn},\'الحركات المالية\'!D2:D{tn},"صرف تمويل",\'الحركات المالية\'!K2:K{tn},"نشطة")'),
-      ('إجمالي التحصيل',f'=SUM(\'العقود\'!L2:L{cn})'),
-      ('الربح التعاقدي المتوقع',f'=SUMIFS(\'العقود\'!N2:N{cn},\'العقود\'!J2:J{cn},"مصروف")'),
-      ('خصومات التسوية',f'=SUM(\'العقود\'!U2:U{cn})'),
-      ('العقود المصروفة',f'=COUNTIFS(\'العقود\'!J2:J{cn},"مصروف")'),
-      ('عدد العملاء',f'=COUNTA(\'العملاء\'!A2:A{max(2,len(clients)+1)})')]
-    for r in formulas: dash.append(r)
+    funded=snap['contracts'];owned=[c for c in funded if c['disbursed'] and c['deal_type']!=DEAL_MANAGED];managed=[c for c in funded if c['disbursed'] and c['deal_type']==DEAL_MANAGED]
+    balances=ledger_balances(wb)
+    values=[('رصيد الحساب البنكي',sar(balances['bank_h'])),('أموال المستثمرين المحتجزة',sar(balances['managed_h'])),
+      ('السيولة الحرة للمكتب',sar(balances['free_h'])),('متبقي عقود المكتب والاستثمارات',sar(sum(c['remaining_h'] for c in owned))),
+      ('متبقي عقود المستثمرين',sar(sum(c['remaining_h'] for c in managed))),('صافي ربح المكتب المتوقع',sar(sum(c['office_expected_profit_h'] for c in funded if c['disbursed']))),
+      ('أرباح المستثمرين المتوقعة',sar(sum(c['investor_expected_profit_h'] for c in managed))),('إجمالي التحصيل',sar(sum(c['paid_h'] for c in funded))),
+      ('خصومات التسوية',sar(sum(c['discount_h'] for c in funded))),('العقود المنفذة',sum(c['disbursed'] for c in funded)),('عدد العملاء',len(clients)),('عدد المستثمرين',len(investors))]
+    for r in values: dash.append(r)
     dash.append(['المصدر',SOURCE]);dash.append(['ملاحظة','الربح المتوقع لا يعني الربح المحقق؛ التصنيف يدوي.'])
     wb.calculation=CalcProperties(calcId=191029,fullCalcOnLoad=True)
     return snap
@@ -339,13 +623,21 @@ def _snapshot_data(wb,inst,disbursed,settled,as_of=None):
     for cid,c in cs.items():
         pp=[x for x in ins if x['رقم العقد']==cid]; rem=sum(x['remaining_h'] for x in pp); paid=sum(x['paid_h'] for x in pp); funded=cid in disbursed
         state='مسودة' if not funded else ('مسدد مبكرًا' if cid in settled else ('مكتمل' if rem==0 else ('متأخر' if any(x['status']=='متأخر' for x in pp) else 'منتظم')))
-        p=money(c['مبلغ التمويل']); total=money(c['إجمالي السداد']); discount=sum(x['waived_h'] for x in pp)
+        metrics=contract_metrics(c);p=metrics['cash_price_h'];total=metrics['total_h'];discount=sum(x['waived_h'] for x in pp)
+        principal_remaining=money(Decimal(p)*Decimal(rem)/Decimal(total)/100) if total else 0
+        capital_base=metrics['invested_cost_h'] if metrics['mode']!=DEAL_MANAGED else 0
+        capital_remaining=money(Decimal(capital_base)*Decimal(rem)/Decimal(total)/100) if total else 0
+        profit_collected=paid-money(Decimal(capital_base)*Decimal(paid)/Decimal(total)/100) if total and capital_base else 0
+        refunds=sum(money(t['المبلغ']) for t in active_tx(wb) if t['رقم العقد']==cid and t['نوع العملية']=='استرداد فائض تمويل')
         cons.append({**c,'client_id':c['رقم العميل'],'principal_h':p,'total_h':total,'paid_h':paid,'remaining_h':rem,'discount_h':discount,
-           'principal_remaining_h':money(Decimal(p)*Decimal(rem)/Decimal(total)/100) if total else 0,
-           'profit_collected_h':paid-money(Decimal(p)*Decimal(paid)/Decimal(total)/100) if total else 0,
+           **metrics,'deal_type':metrics['mode'],'investor_id':text(c.get('رقم المستثمر')),'principal_remaining_h':principal_remaining,
+           'capital_remaining_h':capital_remaining,'profit_collected_h':profit_collected,
+           'surplus_refunded_h':refunds,'surplus_due_h':max(0,metrics['expected_surplus_h']-refunds),
            'disbursed':funded,'status':state,'next_due':min([x['due'] for x in pp if x['remaining_h']],default=None),
            'overdue_h':sum(x['remaining_h'] for x in pp if x['due']<now) if funded else 0,'paid_count':sum(x['remaining_h']==0 for x in pp)})
-    return {'contracts':cons,'installments':ins,'cash_h':cash(wb),'clients':rows(wb,'العملاء'),'transactions':rows(wb,'الحركات المالية'),'followups':rows(wb,'متابعة العملاء')}
+    balances=ledger_balances(wb)
+    return {'contracts':cons,'installments':ins,'cash_h':balances['free_h'],'bank_cash_h':balances['bank_h'],'managed_cash_h':balances['managed_h'],
+      'clients':rows(wb,'العملاء'),'investors':rows(wb,'المستثمرون'),'transactions':rows(wb,'الحركات المالية'),'followups':rows(wb,'متابعة العملاء')}
 
 def snapshot(wb,as_of=None):
     # Reconstruct from authoritative ledger, independent of Excel formula caches.
@@ -359,21 +651,31 @@ def snapshot(wb,as_of=None):
 def validate_book(wb):
     for name,h in SCHEMA.items():
         if name not in wb.sheetnames or [c.value for c in wb[name][1]][:len(h)]!=h: raise ValidationError(f'بنية ورقة {name} غير مطابقة.')
-    if str(settings(wb).get('schema_version'))!='1': raise ValidationError('نسخة بنية الملف غير مدعومة.')
-    for sheet,key in [('العملاء','رقم العميل'),('العقود','رقم العقد'),('متابعة العملاء','رقم المتابعة')]:
+    if str(settings(wb).get('schema_version'))!=str(SCHEMA_VERSION): raise ValidationError('نسخة بنية الملف غير مدعومة.')
+    for sheet,key in [('العملاء','رقم العميل'),('المستثمرون','رقم المستثمر'),('العقود','رقم العقد'),('متابعة العملاء','رقم المتابعة')]:
         rr=rows(wb,sheet)
         if len({r[key] for r in rr})!=len(rr): raise ValidationError('معرفات سجلات مكررة.')
     identities=[text(r['رقم الهوية']) for r in rows(wb,'العملاء') if r['رقم الهوية']]
     if len(identities)!=len(set(identities)): raise ValidationError('أرقام هويات مكررة.')
+    investor_identities=[text(r['رقم الهوية']) for r in rows(wb,'المستثمرون') if r['رقم الهوية']]
+    if len(investor_identities)!=len(set(investor_identities)): raise ValidationError('أرقام هويات مستثمرين مكررة.')
     for c in rows(wb,'العملاء'):
         if not text(c['اسم العميل']) or not text(c['رقم الجوال']): raise ValidationError('اسم وجوال العميل مطلوبان.')
         if c['حالة العميل'] not in CLIENT_STATES or c['التصنيف الائتماني'] not in GRADES: raise ValidationError('حالة أو تصنيف عميل غير صالح.')
         if money(c['الحد الائتماني'])<0 or money(c['الدخل الشهري'])<0: raise ValidationError('بيانات العميل المالية لا تقبل السالب.')
+    for inv in rows(wb,'المستثمرون'):
+        if not text(inv['اسم المستثمر']) or not text(inv['رقم الجوال']) or inv['الحالة'] not in INVESTOR_STATES:
+            raise ValidationError('بيانات مستثمر غير صالحة.')
     for c in rows(wb,'العقود'):
         n=c['مدة العقد']
         if not isinstance(n,(int,float)) or int(n)!=n or not 1<=n<=120: raise ValidationError('مدة عقد غير صالحة.')
-        if money(c['مبلغ التمويل'])<=0 or money(c['إجمالي السداد'])<money(c['مبلغ التمويل']) or money(c['رسوم العقد'])<0:
+        metrics=contract_metrics(c)
+        if metrics['cash_price_h']<=0 or metrics['purchase_cost_h']<=0 or metrics['total_h']<metrics['cash_price_h'] or min(metrics['customer_fee_h'],metrics['paid_office_fee_h'],metrics['fixed_office_fee_h'],metrics['other_cost_h'])<0:
             raise ValidationError('مبالغ عقد غير صالحة.')
+        if metrics['mode'] in [DEAL_EXTERNAL,DEAL_MANAGED] and metrics['funding_h']<metrics['purchase_cost_h']:
+            raise ValidationError('تمويل العقد أقل من تكلفة الشراء.')
+        if metrics['mode']==DEAL_MANAGED and not find(wb,'المستثمرون','رقم المستثمر',c['رقم المستثمر']):
+            raise ValidationError('مستثمر العقد غير موجود.')
         if day(c['تاريخ العقد']) is None or day(c['أول قسط']) is None or day(c['أول قسط'])<day(c['تاريخ العقد']):
             raise ValidationError('تواريخ عقد غير صالحة.')
     contracts={c['رقم العقد'] for c in rows(wb,'العقود')}
@@ -421,8 +723,8 @@ def format_book(wb):
     d['A1'].font=Font(name='Arial',size=17,bold=True,color='153945');d['A1'].fill=PatternFill(fill_type=None)
     d['B1'].fill=PatternFill(fill_type=None)
     for c in d[2]: c.fill=PatternFill('solid',fgColor='E2F0F0');c.font=Font(name='Arial',bold=True,color='153945',size=11)
-    for row in range(3,12): d.row_dimensions[row].height=27;d.cell(row,2).number_format='#,##0.00;(#,##0.00);"—"'
-    d['B10'].number_format='0';d['B11'].number_format='0'
+    for row in range(3,d.max_row+1): d.row_dimensions[row].height=27;d.cell(row,2).number_format='#,##0.00;(#,##0.00);"—"'
+    for cell in ['B12','B13','B14']:d[cell].number_format='0'
     for col in ['C','D','L']:
         wb['العملاء'].column_dimensions[col].width=24
     config=wb['الإعدادات']
@@ -435,11 +737,14 @@ def format_book(wb):
     config['B2'].number_format='0'
     config['B3'].number_format='0'
     config['B4'].number_format='0.0%'
+    if wb['العقود'].max_row>1:
+        roi_col=SCHEMA['العقود'].index('عائد الاستثمار')+1
+        for r in range(2,wb['العقود'].max_row+1):wb['العقود'].cell(r,roi_col).number_format='0.00%'
 
 def dump(wb):
     b=BytesIO();wb.save(b);return b.getvalue()
 def load(data):
-    wb=load_workbook(BytesIO(data));validate_book(wb);return wb
+    wb=load_workbook(BytesIO(data));migrate(wb);validate_book(wb);return wb
 
 def perform(wb,action,data,request_id=None):
     """Mutate a disposable copy; callers publish it atomically only after validation."""
@@ -447,8 +752,11 @@ def perform(wb,action,data,request_id=None):
     if any(r['رقم السجل']==request_id for r in rows(wb,'سجل التغييرات')): return 'سبق تنفيذ الطلب'
     if action=='add_client': ident=add_client(wb,data)
     elif action=='edit_client': ident=data['id'];edit_client(wb,ident,data)
+    elif action=='add_investor': ident=add_investor(wb,data)
+    elif action=='edit_investor': ident=data['id'];edit_investor(wb,ident,data)
     elif action=='add_contract': ident=add_contract(wb,data)
     elif action=='edit_contract': ident=data['id'];edit_contract(wb,ident,data)
+    elif action=='activate_contract': ident=activate_contract(wb,request_id=request_id,**data)
     elif action=='transaction': ident=tx(wb,request_id=request_id,**data)
     elif action=='edit_transaction':
         old=require(wb,'الحركات المالية','رقم العملية',data['id'])

@@ -43,7 +43,9 @@ class LocalStore:
             backup(self.path);atomic_write(self.path,new)
             return result,new,digest(new)
     def replace(self,expected,data):
-        core.load(data)
+        # Persist any supported schema migration instead of validating an old
+        # layout in memory and then writing the un-migrated bytes back.
+        data=core.dump(core.load(data))
         with FileLock(str(self.path)+'.lock',timeout=20):
             if digest(self.path.read_bytes())!=expected: raise core.ConflictError('تغير الملف. حدّث قبل الاستعادة.')
             backup(self.path);atomic_write(self.path,data)
@@ -125,7 +127,7 @@ class OneDriveStore:
         raw,newtag=self._publish(tag,new)
         return result,raw,newtag
     def replace(self,expected,data):
-        core.load(data)
+        data=core.dump(core.load(data))
         old,tag=self.read()
         if tag!=expected: raise core.ConflictError('تغير الملف قبل الاستعادة. حدّث المصدر.')
         root=Path(tempfile.gettempdir())/'installment_recovery'/hashlib.sha256(self.item_id.encode()).hexdigest()
