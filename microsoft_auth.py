@@ -31,9 +31,9 @@ def microsoft_config() -> dict[str, str]:
         "onedrive_folder": setting(
             "INSTALLMENT_ONEDRIVE_FOLDER",
             "onedrive_folder",
-            "Installment System",
+            "Installment System V2",
         ),
-        "workbook_name": "Installment_System.xlsx",
+        "workbook_name": setting("INSTALLMENT_WORKBOOK_NAME", "workbook_name", "Installment_System_V2.xlsx"),
         "redirect_uri": setting(
             "INSTALLMENT_REDIRECT_URI",
             "redirect_uri",
